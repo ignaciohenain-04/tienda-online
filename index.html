@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Simple | Tu Negocio</title>
+    <style>
+        /* --- VARIABLES Y ESTILOS GLOBALES --- */
+        :root {
+            --primary: #25d366; /* Verde WhatsApp */
+            --dark: #1a1a1a;
+            --light: #f4f4f4;
+            --gray: #888;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--light); color: var(--dark); line-height: 1.6; }
+
+        /* --- LAYOUT --- */
+        header { 
+            background: var(--white); 
+            padding: 2rem 1rem; 
+            text-align: center; 
+            box-shadow: var(--shadow);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .container { max-width: 1100px; margin: auto; padding: 1rem; }
+
+        /* --- FILTROS --- */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        select, input {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        /* --- PRODUCTOS --- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover { transform: translateY(-5px); }
+
+        .product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .product-info { padding: 1.5rem; flex-grow: 1; }
+        .product-price { font-weight: bold; color: var(--dark); font-size: 1.2rem; display: block; margin: 0.5rem 0; }
+        
+        .btn-add {
+            width: 100%;
+            background: var(--dark);
+            color: var(--white);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover { background: #333; }
+
+        /* --- CARRITO FLOTANTE --- */
+        #cart-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--dark);
+            color: var(--white);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 99;
+        }
+
+        #cart-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--primary);
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+
+        /* --- MODAL CARRITO --- */
+        .cart-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: flex-end;
+            z-index: 1000;
+        }
+
+        .cart-content {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .cart-items { flex-grow: 1; overflow-y: auto; margin: 1rem 0; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
+
+        .btn-whatsapp {
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* --- WHATSAPP FLOTANTE --- */
+        .wa-float {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+            z-index: 99;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        footer { text-align: center; padding: 3rem; color: var(--gray); font-size: 0.9rem; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .cart-content { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>HENACOLLS</h1>
+    <a href="#" id="insta-link" style="color: var(--gray); text-decoration: none; font-size: 0.8rem;">Instagram: @Nacho.henain</a>
+</header>
+
+<div class="container">
+    <div class="filters">
+        <select id="filter-category" onchange="filterProducts()">
+            <option value="all">Todas las categorías</option>
+            <option value="ropa">Ropa</option>
+            <option value="deportivo">Deportivo</option>
+            <option value="accesorios">Accesorios</option>
+        </select>
+        <input type="number" id="filter-price" placeholder="Precio máximo" oninput="filterProducts()">
+    </div>
+
+    <div class="product-grid" id="product-grid">
+        </div>
+</div>
+
+<div id="cart-btn" onclick="toggleCart()">
+    🛒 <span id="cart-count">0</span>
+</div>
+
+<a href="#" class="wa-float" id="wa-direct-link" target="_blank">Chat Directo 💬</a>
+
+<div class="cart-modal" id="cart-modal" onclick="if(event.target == this) toggleCart()">
+    <div class="cart-content">
+        <h2>Tu Pedido</h2>
+        <div class="cart-items" id="cart-items">
+            </div>
+        <div style="margin-bottom: 1rem; font-weight: bold; font-size: 1.2rem;">
+            Total: $<span id="cart-total">0</span>
+        </div>
+        <button onclick="sendWhatsApp()" class="btn-whatsapp">Enviar Pedido por WhatsApp</button>
+        <button onclick="toggleCart()" style="margin-top: 1rem; border: none; background: none; cursor: pointer; color: var(--gray);">Cerrar</button>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Mi Tienda Online. Desarrollado con minimalismo.</p>
+</footer>
+
+<script>
+    /* --- CONFIGURACIÓN --- */
+    const PHONE_NUMBER = "5493425459648"; // Cambia esto (Código de país + número)
+    const INSTAGRAM_URL = "https://instagram.com/nacho.henain";
+
+    /* --- DATOS --- */
+    const products = [
+        { id: 1, name: "Broche", price: 2000, category: "accesorios", desc: "Crudo/Marron claro/Marron oscuro/Negro.", img: "https://i.ibb.co/xqT5Bt9m/Broches.jpg" },
+        { id: 2, name: "Mochila deportiva", price: 32000, category: "deportivo", desc: ".", img: "https://i.ibb.co/QFtpSTNN/Mochila-negra-con-verde-2.jpg" },
+        { id: 3, name: "Morral", price: 11900, category: "accesorios", desc: "qsy.", img: "https://i.ibb.co/PZjKFDRB/Mochilas-gris-y-negro.jpg" },
+        { id: 4, name: "Grip Padel", price: 2500, category: "deportivo", desc: "grip deportivo para padel", img: "https://i.ibb.co/j9jLcLRj/Grips.jpg" },
+    ];
+
+    let cart = [];
+
+    /* --- FUNCIONES LÓGICAS --- */
+
+    function init() {
+        document.getElementById('insta-link').href = INSTAGRAM_URL;
+        document.getElementById('wa-direct-link').href = `https://wa.me/${PHONE_NUMBER}`;
+        renderProducts(products);
+    }
+
+    function renderProducts(list) {
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = list.map(p => `
+            <div class="product-card">
+                <img src="${p.img}" class="product-img" alt="${p.name}">
+                <div class="product-info">
+                    <h3>${p.name}</h3>
+                    <p style="color: #666; font-size: 0.9rem;">${p.desc}</p>
+                    <span class="product-price">$${p.price.toLocaleString()}</span>
+                    <button class="btn-add" onclick="addToCart(${p.id})">Agregar al carrito</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterProducts() {
+        const cat = document.getElementById('filter-category').value;
+        const maxPrice = document.getElementById('filter-price').value || Infinity;
+        
+        const filtered = products.filter(p => {
+            const matchCat = cat === 'all' || p.category === cat;
+            const matchPrice = p.price <= maxPrice;
+            return matchCat && matchPrice;
+        });
+        renderProducts(filtered);
+    }
+
+    function addToCart(id) {
+        const product = products.find(p => p.id === id);
+        const inCart = cart.find(item => item.id === id);
+
+        if (inCart) {
+            inCart.qty++;
+        } else {
+            cart.push({ ...product, qty: 1 });
+        }
+        updateUI();
+        // Animación simple de feedback
+        const btn = document.getElementById('cart-btn');
+        btn.style.transform = 'scale(1.2)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 200);
+    }
+
+    function updateUI() {
+        const count = cart.reduce((acc, item) => acc + item.qty, 0);
+        const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        
+        document.getElementById('cart-count').innerText = count;
+        document.getElementById('cart-total').innerText = total.toLocaleString();
+
+        const cartItems = document.getElementById('cart-items');
+        cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item" style="display: flex; align-items: center; gap: 10px;">
+            <div style="flex-grow: 1;">
+                <strong>${item.name}</strong> x${item.qty}
+                <br>
+                <span style="font-size: 0.8rem; color: var(--gray);">$${(item.price * item.qty).toLocaleString()}</span>
+            </div>
+            <button onclick="removeFromCart(${item.id})" 
+                style="background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer;">
+            ✕
+            </button>
+         </div>
+        `).join('');
+    }
+
+    function toggleCart() {
+        const modal = document.getElementById('cart-modal');
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function sendWhatsApp() {
+        if (cart.length === 0) return alert("El carrito está vacío");
+
+        let message = "Hola, quiero realizar un pedido:\n\n";
+        cart.forEach(item => {
+            message += `• ${item.name} x${item.qty} - $${(item.price * item.qty).toLocaleString()}\n`;
+        });
+        message += `\n*Total: $${document.getElementById('cart-total').innerText}*`;
+
+        const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    }
+
+    init();
+
+    function removeFromCart(id) {
+    // Filtramos el carrito para mantener todo EXCEPTO el producto con ese ID
+    cart = cart.filter(item => item.id !== id);
+    updateUI(); // Volvemos a dibujar el carrito con los datos nuevos
+    }
+
+</script>
+
+</body>
+</html>
