@@ -219,20 +219,125 @@
 </div>
 
 <footer>
-    <p>&copy; 2026 Mi Tienda Online. Desarrollado con minimalismo.</p>
+    <p>&copy; 2026 Terrible pagina me mande.</p>
 </footer>
 
 <script>
     /* --- CONFIGURACIÓN --- */
-    const PHONE_NUMBER = "5493425459648"; // Cambia esto (Código de país + número)
+    const PHONE_NUMBER = "5493425459648"; 
     const INSTAGRAM_URL = "https://instagram.com/nacho.henain";
 
     /* --- DATOS --- */
     const products = [
-        { id: 1, name: "Broche", price: 2000, category: "accesorios", desc: "Crudo/Marron claro/Marron oscuro/Negro.", img: "https://i.ibb.co/xqT5Bt9m/Broches.jpg" },
-        { id: 2, name: "Mochila deportiva", price: 32000, category: "deportivo", desc: ".", img: "https://i.ibb.co/QFtpSTNN/Mochila-negra-con-verde-2.jpg" },
-        { id: 3, name: "Morral", price: 11900, category: "accesorios", desc: "qsy.", img: "https://i.ibb.co/PZjKFDRB/Mochilas-gris-y-negro.jpg" },
-        { id: 4, name: "Grip Padel", price: 2500, category: "deportivo", desc: "grip deportivo para padel", img: "https://i.ibb.co/j9jLcLRj/Grips.jpg" },
+        { 
+            id: 1, 
+            name: "Broche", 
+            price: 2000, 
+            category: "accesorios", 
+            desc: "Sin stock.", 
+            images: ["img/Broches.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 2, 
+            name: "Colitas", 
+            price: "500x15", 
+            category: "accesorios", 
+            desc: "Stock: 13 packs.", 
+            images: ["img/Colitas.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 3, 
+            name: "Mochila deportiva", 
+            price: 32000, 
+            category: "deportivo", 
+            desc: "Stock: 2.", 
+            images: ["img/Mochila negra con verde.jpeg", "img/Mochila negra con verde 2.jpeg"], 
+            currentImg: 0
+        },
+        { 
+            id: 4, 
+            name: "Medias antideslizantes", 
+            price: 4000, 
+            category: "ropa", 
+            desc: "Stock: 8.", 
+            images: ["img/Medias antideslizante.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 5, 
+            name: "Medias NB", 
+            price: 4000, 
+            category: "ropa", 
+            desc: "Stock: 3.", 
+            images: ["img/Medias NB.jpeg"],
+            currentImg: 0 
+        }, 
+        { 
+            id: 6, 
+            name: "Medias Diseño", 
+            price: 2500, 
+            category: "ropa", 
+            desc: "Stock: 10.", 
+            images: ["img/Medias Diseño.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 7, 
+            name: "Medias soquete", 
+            price: 2000, 
+            category: "ropa", 
+            desc: "Stock: 10.", 
+            images: ["img/Medias soquete.jpeg"],
+            currentImg: 0 
+        }, 
+        { 
+            id: 8, 
+            name: "Bufanda", 
+            price: 10000, 
+            category: "ropa", 
+            desc: "Stock: 3.", 
+            images: ["img/Bufandas.jpeg","img/Bufanda marron.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 9, 
+            name: "Campera rompevientos", 
+            price: 45000, 
+            category: "ropa", 
+            desc: "Stock: 1.", 
+            images: ["img/Camp_frente_tiras_1.jpeg", "img/Camp_atras_tiras_2.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 10, 
+            name: "Campera rompevientos", 
+            price: 45000, 
+            category: "ropa", 
+            desc: "Stock: 1.", 
+            images: ["img/Camp_frente_lisa_1.jpeg", "img/Camp_atras_lisa_2.jpeg"],
+            currentImg: 0 
+        },
+        { 
+            id: 7, 
+            name: "Morral", 
+            price: 12000, 
+            category: "accesorios", 
+            desc: "Stock: 2.", 
+            images: ["img/Morrales.jpeg"],
+            currentImg: 0 
+        }, 
+        /*{ 
+            id: 8, 
+            name: "Guantes negros", 
+            price: 12000, 
+            category: "accesorios", 
+            desc: "Stock: 300.", 
+            images: ["img/Guantesnegross.webp"],
+            currentImg: 0 
+        }, */
+
     ];
 
     let cart = [];
@@ -247,17 +352,34 @@
 
     function renderProducts(list) {
         const grid = document.getElementById('product-grid');
-        grid.innerHTML = list.map(p => `
+        grid.innerHTML = list.map(p => {
+            // Solo mostramos flechas si tiene más de 1 imagen
+            const hasMultipleImages = p.images.length > 1;
+        
+            return `
             <div class="product-card">
-                <img src="${p.img}" class="product-img" alt="${p.name}">
+                <div style="position: relative; height: 200px; background: #eee; overflow: hidden;">
+                    <img src="${p.images[p.currentImg]}" 
+                         style="width: 100%; height: 100%; object-fit: cover;" 
+                         alt="${p.name}">
+                    
+                    ${hasMultipleImages ? `
+                        <button onclick="changeImage(${p.id}, -1)" 
+                                style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">❮</button>
+                        <button onclick="changeImage(${p.id}, 1)" 
+                                style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">❯</button>
+                    ` : ''}
+                </div>
+
                 <div class="product-info">
                     <h3>${p.name}</h3>
-                    <p style="color: #666; font-size: 0.9rem;">${p.desc}</p>
+                    <p style="color: #666; font-size: 0.8rem;">${p.desc}</p>
                     <span class="product-price">$${p.price.toLocaleString()}</span>
                     <button class="btn-add" onclick="addToCart(${p.id})">Agregar al carrito</button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function filterProducts() {
@@ -335,6 +457,23 @@
     // Filtramos el carrito para mantener todo EXCEPTO el producto con ese ID
     cart = cart.filter(item => item.id !== id);
     updateUI(); // Volvemos a dibujar el carrito con los datos nuevos
+    }
+
+    function changeImage(productId, direction) {
+        const product = products.find(p => p.id === productId);
+    
+        // Sumamos o restamos al índice actual
+        product.currentImg += direction;
+
+        // Lógica de "loop": si llegamos al final, vuelve al principio y viceversa
+        if (product.currentImg >= product.images.length) {
+            product.currentImg = 0;
+        } else if (product.currentImg < 0) {
+            product.currentImg = product.images.length - 1;
+        }
+
+        // Volvemos a renderizar para que se vea el cambio
+        renderProducts(products); 
     }
 
 </script>
